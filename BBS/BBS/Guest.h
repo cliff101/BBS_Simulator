@@ -3,5 +3,6 @@
 
 class Guest :public User {
 public:
-	Guest(std::string inUserName,std::string inPassword);
+	Guest();
+	Guest(std::ifstream& ifile);//construct user with load file
 };

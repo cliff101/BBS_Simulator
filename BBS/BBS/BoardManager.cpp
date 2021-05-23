@@ -1,7 +1,7 @@
 #include "BoardManager.h"
 
 BoardManager::BoardManager() {
-	users.push_back(new User("guest", "", 2));
+	users.push_back(new Guest());
 }
 BoardManager::BoardManager(std::string& filename) {
 	///*/*login*/*/
@@ -149,9 +149,11 @@ void BoardManager::Menu() {
 
 void BoardManager::SaveStatusToFile(std::string filename){
 	std::ofstream ofile(filename);
-	int nusers = users.size();
+	int nusers = users.size(),thisusertype = 0;
 	ofile.write((char*)&nusers, sizeof(nusers));
 	for (int i = 0; i < nusers; i++) {
+		thisusertype = users[i]->GetPermission_level();
+		ofile.write((char*)&thisusertype, sizeof(thisusertype));
 		users[i]->SaveUserToFile(ofile);
 	}
 	//then board
@@ -163,10 +165,19 @@ void BoardManager::LoadStatusFromFile(std::string filename){
 	users.clear();
 
 	std::ifstream ifile(filename);
-	int nusers = 0;
+	int nusers = 0, thisusertype = 0;
 	ifile.read((char*)&nusers, sizeof(nusers));
 	for (int i = 0; i < nusers; i++) {
-		users.push_back(new User(ifile));
+		ifile.read((char*)&thisusertype, sizeof(thisusertype));
+		if (thisusertype == 0) {
+			users.push_back(new Administrator(ifile));
+		}
+		else if (thisusertype == 1) {
+			users.push_back(new Member(ifile));
+		}
+		else if (thisusertype == 2) {
+			users.push_back(new Guest(ifile));
+		}
 	}
 	//then board
 }

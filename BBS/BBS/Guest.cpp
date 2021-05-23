@@ -1,3 +1,4 @@
 #include "Guest.h"
 
-Guest::Guest(std::string inUserName, std::string inPassword) :User(inUserName, inPassword,2) {}
+Guest::Guest() :User("guest", "", 2) {}
+Guest::Guest(std::ifstream& ifile) : User(ifile) {}

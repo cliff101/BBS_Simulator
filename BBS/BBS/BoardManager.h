@@ -5,6 +5,9 @@
 #include "User.h"
 #include "Board.h"
 #include "Viewer.h"
+#include "Guest.h"
+#include "Member.h"
+#include "Administrator.h"
 
 enum BoardState
 {
