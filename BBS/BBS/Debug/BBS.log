@@ -1,5 +1,0 @@
-﻿  BoardManager.cpp
-C:\Users\cliffsu\Documents\CPPlang\PROJECT03\BBS\BBS\BoardManager.cpp(46,21): warning C4018: '<': signed/unsigned 不相符
-C:\Users\cliffsu\Documents\CPPlang\PROJECT03\BBS\BBS\BoardManager.cpp(86,21): warning C4018: '<': signed/unsigned 不相符
-C:\Users\cliffsu\Documents\CPPlang\PROJECT03\BBS\BBS\BoardManager.cpp(159,20): warning C4018: '<': signed/unsigned 不相符
-  BBS.vcxproj -> C:\Users\cliffsu\Documents\CPPlang\PROJECT03\BBS\Debug\BBS.exe

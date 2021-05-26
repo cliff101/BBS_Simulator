@@ -43,15 +43,21 @@ public:
 
 	void NewBoard();//func for admin to create board
 	void DeleteBoard();//func for admin to delete board
+	void DeleteAllBoard();
+	void DeleteAllUser();
 
 	void SaveStatusToFile(std::string filename);//including num of boards, num of users
 	void LoadStatusFromFile(std::string filename);
 private:
 	std::vector<User*> users;//0 is guest!!
-	std::vector<Board> boards;
+	std::vector<Board*> boards;
 
-	int current_user=-1;
-	long long current_max_postID=0;//目前的最高post id，用於紀錄postID用(User.h spec要求)
+	Board* Selectedboard;
+	Post* Selectedpost;
+	Post::Comment* Selectedcomment;
+
+	int current_user = -1;
+	long long max_postID = 0;//目前的最高post id，用於紀錄postID用(User.h spec要求)
 
 	BoardState state = MENU;//目前使用者所處的狀態
 	Viewer viewer;

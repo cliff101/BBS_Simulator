@@ -68,8 +68,12 @@
     <ClInclude Include="Administrator.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
+    <ClInclude Include="FileIOTools.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Project3.pptx" />
+    <None Include="..\..\Project3 Grading Sheet.docx" />
   </ItemGroup>
 </Project>
