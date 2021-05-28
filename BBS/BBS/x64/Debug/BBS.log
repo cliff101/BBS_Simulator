@@ -1,4 +1,4 @@
 ﻿  BoardManager.cpp
-C:\Users\cliffsu\Documents\CPPlang\PROJECT03\BBS\BBS\BoardManager.cpp(314,27): warning C4267: '正在初始化': 將 'size_t' 轉換為 'int'，資料可能遺失
-C:\Users\cliffsu\Documents\CPPlang\PROJECT03\BBS\BBS\BoardManager.cpp(316,26): warning C4267: '正在初始化': 將 'size_t' 轉換為 'int'，資料可能遺失
+C:\Users\cliffsu\Documents\CPPlang\PROJECT03\BBS\BBS\BoardManager.cpp(404,27): warning C4267: '正在初始化': 將 'size_t' 轉換為 'int'，資料可能遺失
+C:\Users\cliffsu\Documents\CPPlang\PROJECT03\BBS\BBS\BoardManager.cpp(406,26): warning C4267: '正在初始化': 將 'size_t' 轉換為 'int'，資料可能遺失
   BBS.vcxproj -> C:\Users\cliffsu\Documents\CPPlang\PROJECT03\BBS\x64\Debug\BBS.exe

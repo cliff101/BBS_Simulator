@@ -1,11 +1,14 @@
 #include "BoardManager.h"
 #include "FileIOTools.h"
 
-BoardManager::BoardManager() :current_user(-1), max_postID(0), state(MENU), Selectedboard(nullptr), Selectedpost(nullptr), Selectedcomment(nullptr) {
-	users.push_back(new Guest());
+BoardManager::BoardManager() :datafilename("data.dat"), current_user(-1), max_postID(0), state(MENU), Selectedboard(nullptr), Selectedpost(nullptr), Selectedcomment(nullptr) {
+	LoadStatusFromFile();
 }
-BoardManager::BoardManager(std::string& filename) : state(MENU), current_user(-1), max_postID(0), Selectedboard(nullptr), Selectedpost(nullptr), Selectedcomment(nullptr) {
-	LoadStatusFromFile(filename);
+BoardManager::BoardManager(std::string& filename) : datafilename(filename), state(MENU), current_user(-1), max_postID(0), Selectedboard(nullptr), Selectedpost(nullptr), Selectedcomment(nullptr) {
+	LoadStatusFromFile();
+}
+BoardManager::~BoardManager() {
+	SaveStatusToFile();
 }
 
 void BoardManager::StartBoardManager() {
@@ -15,21 +18,13 @@ void BoardManager::AccountManager() {
 	while (true) {
 		system("cls");
 		int select;
-		std::cout << "1. login\n2. create account\n3. (debug)save\n4. (debug)load\n5. exit\nPlease Select:";
+		std::cout << "1. login\n2. create account\n5. exit\nPlease Select:";
 		std::cin >> select;
 		if (select == 1) {//if successful, directly call menu in login func
 			LogIn();
 		}
 		else if (select == 2) {
 			CreateAccount();
-		}
-		else if (select == 3) {
-			//DeleteAccount();
-			SaveStatusToFile("test.dat");
-			//LoadStatusFromFile("test.dat");
-		}
-		else if (select == 4) {
-			LoadStatusFromFile("test.dat");
 		}
 		else if (select == 5) {
 			break;
@@ -82,8 +77,8 @@ void BoardManager::CreateAccount() {
 	case 2:
 		std::cout << "UserName: ";
 		std::cin >> usn;
-		if (usn == "guest") {
-			std::cout << "Cannot nameed guest!\nEnter anything to continue:";
+		if (usn == "guest" || usn == "You") {
+			std::cout << "Name not allow!\nEnter anything to continue:";
 			std::getline(std::cin, pwc);
 			std::getline(std::cin, pwc);
 			return;
@@ -151,8 +146,9 @@ void BoardManager::Menu() {
 	int select = 0;
 	while (true) {
 		system("cls");
+		state = MENU;
 		std::cout << "User Name: " << users[current_user]->GetUserName() << "\nPermission level: " << users[current_user]->GetPermission_level() << std::endl;
-		std::cout << "\n1. Select board\n2. Mini game\n5. logout\nPlease Select: ";
+		std::cout << "\n1. Select board\n2. Mini game\n3. Message\n5. logout\nPlease Select: ";
 		std::cin >> select;
 		if (select == 1) {
 			SelectBoard();
@@ -160,8 +156,55 @@ void BoardManager::Menu() {
 		else if (select == 2) {
 			MiniGame();
 		}
+		else if (users[current_user]->GetPermission_level() < 2 && select == 3) {
+			MessageManagement();
+		}
 		else if (select == 5) {
 			break;
+		}
+	}
+}
+void BoardManager::MessageManagement() {
+	while (true) {
+		system("cls");
+		auto msgs = users[current_user]->Getmsg();
+		std::vector<std::string> key(0);
+		int i = 0,
+			select = 0;
+		std::cout << "-1. back\n";
+		std::cout << "0. write message\n";
+		for (std::map<std::string, std::vector<std::string>>::iterator it = msgs.begin(); it != msgs.end(); ++it) {
+			key.push_back(it->first);
+			std::cout << ++i << ".  " << it->first << "  " << it->second[it->second.size() - 1] << "\n";
+		}
+		std::cout << "\nPlease select:";
+		std::cin >> select;
+		if (select == 0) {
+			SendMessage();
+		}
+		else if (select == -1) {
+			break;
+		}
+		else if (select > 0 && select <= key.size()) {
+			SingleMessageManagement(key[select - 1]);
+		}
+	}
+}
+void BoardManager::SingleMessageManagement(std::string usernamekey) {
+	while (true) {
+		system("cls");
+		std::vector<std::string> msg = users[current_user]->Getmsg()[usernamekey];
+		for (int i = 0; i < msg.size(); i++) {
+			std::cout << msg[i] << "\n";
+		}
+		int select = 0;
+		std::cout << "\n-1. back\n0. write message\n\nPlease select:";
+		std::cin >> select;
+		if (select == -1) {
+			break;
+		}
+		else if (select == 0) {
+			SendMessage(usernamekey);
 		}
 	}
 }
@@ -172,6 +215,7 @@ void BoardManager::SelectBoard() {
 	int select = 0;
 	while (true) {
 		system("cls");
+		state = SELECT_BOARD;
 		if (users[current_user]->GetPermission_level() == 0) {
 			std::cout << "-3 Delete Board" << std::endl;
 			std::cout << "-2 Delete Board" << std::endl;
@@ -208,21 +252,24 @@ void BoardManager::SelectPost() {
 	int select = 0;
 	while (true) {
 		system("cls");
+		state = BOARD;
 		if (users[current_user]->GetPermission_level() == 0) {
-			std::cout << "-3 Delete All Posts" << std::endl;
+			std::cout << "-5. Admin Delete Post" << std::endl;
+			std::cout << "-4. Delete All Posts" << std::endl;
 		}
-		std::cout << "-2. Delete Post" << std::endl;
+		std::cout << "-3. Delete Post" << std::endl;
+		std::cout << "-2. Edit Post" << std::endl;
 		std::cout << "-1. Back" << std::endl;
 		std::cout << "0. Create Post" << std::endl;
 		for (int i = 0; i < Selectedboard->posts.size(); i++) {
-			std::cout << i + 1 << ". " << Selectedboard->posts[i]->Topic << " Author: " << users[Selectedboard->posts[i]->createuserID]->GetUserName() << std::endl;
+			std::cout << i + 1 << ". " << Selectedboard->posts[i]->Topic << " Author: " << users[Selectedboard->posts[i]->createuserID]->GetUserName() << "  ±À: " << Selectedboard->posts[i]->pushuserID.size() << "  µê: " << Selectedboard->posts[i]->shuserID.size() << std::endl;
 		}
 		std::cout << "Please select: ";
 		std::cin >> select;
-		if (select == 0) {
+		if (users[current_user]->GetPermission_level() < 2 && select == 0) {
 			Selectedboard->NewPost(max_postID);
 		}
-		else if (select > 0 && select <= Selectedboard->posts.size()) {
+		else if (select > 0 && select <= Selectedboard->posts.size() && !Selectedboard->posts[static_cast<std::vector<Board, std::allocator<Board>>::size_type>(select) - 1]->delete_by_admin) {
 			Selectedpost = Selectedboard->posts[static_cast<std::vector<Board, std::allocator<Board>>::size_type>(select) - 1];
 			Selectedpost->current_user = current_user;
 			PostManagement();
@@ -230,11 +277,17 @@ void BoardManager::SelectPost() {
 		else if (select == -1) {
 			break;
 		}
-		else if (select == -2) {
+		else if (users[current_user]->GetPermission_level() < 2 && select == -2) {
+			Selectedboard->EditPost();
+		}
+		else if (users[current_user]->GetPermission_level() < 2 && select == -3) {
 			Selectedboard->DeletePost();
 		}
-		else if (users[current_user]->GetPermission_level() == 0 && select == -3) {
+		else if (users[current_user]->GetPermission_level() == 0 && select == -4) {
 			Selectedboard->DeleteAllPost();
+		}
+		else if (users[current_user]->GetPermission_level() == 0 && select == -5) {
+			Selectedboard->AdminDeletePost();
 		}
 	}
 }
@@ -242,14 +295,18 @@ void BoardManager::PostManagement() {
 	int select = 0;
 	while (true) {
 		system("cls");
-		std::cout << "\n" << Selectedpost->Topic << "\tAuthor: " << users[Selectedpost->createuserID]->GetUserName() << "\n\n" << Selectedpost->Pocontent << "\n\n";
+		state = POST;
+		std::cout << "\n" << Selectedpost->Topic << "\tAuthor: " << users[Selectedpost->createuserID]->GetUserName() << "  ±À: " << Selectedpost->pushuserID.size() << "  µê: " << Selectedpost->shuserID.size() << "\n\n" << Selectedpost->Pocontent << "\n\n";
 		for (int i = 0; i < Selectedpost->comments.size(); i++) {
 			std::cout << "--> " << users[Selectedpost->comments[i]->createuserID]->GetUserName() << ": " << Selectedpost->comments[i]->cmcontent << "\n";
 		}
 		std::cout << "\n\n";
 		if (users[current_user]->GetPermission_level() == 0) {
-			std::cout << "-3 Delete All Comments" << std::endl;
+			std::cout << "-6. Admin Delete Post" << std::endl;
+			std::cout << "-5. Delete All Comments" << std::endl;
 		}
+		std::cout << "-4. µê Post" << std::endl;
+		std::cout << "-3. ±À Post" << std::endl;
 		std::cout << "-2. Delete Comment" << std::endl;
 		std::cout << "-1. Back" << std::endl;
 		std::cout << "0. Create Comment" << std::endl;
@@ -258,14 +315,23 @@ void BoardManager::PostManagement() {
 		if (select == -1) {
 			break;
 		}
-		else if (select == 0) {
+		else if (users[current_user]->GetPermission_level() < 2 && select == 0) {
 			Selectedpost->NewComment();
 		}
-		else if (select == -2) {
+		else if (users[current_user]->GetPermission_level() < 2 && select == -2) {
 			Selectedpost->DeleteComment();
 		}
-		else if (users[current_user]->GetPermission_level() == 0 && select == -3) {
+		else if (users[current_user]->GetPermission_level() < 2 && select == -3) {
+			Selectedpost->PushThisPost();
+		}
+		else if (users[current_user]->GetPermission_level() < 2 && select == -4) {
+			Selectedpost->ShThisPost();
+		}
+		else if (users[current_user]->GetPermission_level() == 0 && select == -5) {
 			Selectedpost->DeleteAllComment();
+		}
+		else if (users[current_user]->GetPermission_level() == 0 && select == -6) {
+			Selectedpost->AdminDeleteComment();
 		}
 	}
 }
@@ -308,9 +374,33 @@ void BoardManager::DeleteAllUser() {
 	}
 	users.clear();
 }
+void BoardManager::SendMessage(std::string tun) {
+	//system("cls");
+	std::string target_user_name = tun,
+		content = "";
+	std::string current_user_name = users[current_user]->GetUserName();
+	std::getline(std::cin, content);
+	if (target_user_name == "") {
+		std::cout << "UserName: ";
+		std::getline(std::cin, target_user_name);
+	}
+	std::cout << "Content(single line): ";
+	std::getline(std::cin, content);
+	for (int i = 0; i < users.size(); i++) {
+		if (users[i]->GetUserName() == target_user_name) {
+			users[i]->Addmsg(current_user_name, current_user_name + ": " + content);
+			users[current_user]->Addmsg(target_user_name, "You: " + content);
+			std::cout << "Succ! Enter anything to continue: ";
+			std::getline(std::cin, content);
+			return;
+		}
+	}
+	std::cout << "Failed! Enter anything to continue: ";
+	std::getline(std::cin, content);
+}
 
-void BoardManager::SaveStatusToFile(std::string filename) {
-	std::ofstream ofile(filename);
+void BoardManager::SaveStatusToFile() {
+	std::ofstream ofile(datafilename);
 	int nusers = users.size(),
 		thisusertype = 0,
 		nboards = boards.size();
@@ -329,11 +419,11 @@ void BoardManager::SaveStatusToFile(std::string filename) {
 
 	ofile.close();
 }
-void BoardManager::LoadStatusFromFile(std::string filename) {
+void BoardManager::LoadStatusFromFile() {
 	int nusers = 0,
 		thisusertype = 0,
 		nboards = 0;
-	std::ifstream ifile(filename);
+	std::ifstream ifile(datafilename);
 
 	LoadNormDataFromFile(max_postID, ifile);
 	LoadNormDataFromFile(nboards, ifile);

@@ -30,7 +30,7 @@
     <ClCompile Include="Viewer.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
-    <ClCompile Include="Posts.cpp">
+    <ClCompile Include="Post.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
     <ClCompile Include="Administrator.cpp">

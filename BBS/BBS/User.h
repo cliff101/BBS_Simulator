@@ -9,7 +9,6 @@ class User {
 public:
 	User(std::string inUserName, std::string inPassword, int inprl);//create user with UserName and Permission_level
 	User(std::ifstream& ifile);//construct user with load file
-	User();
 	User(const User& in);
 
 	std::vector<int> GetpostsID();
@@ -29,6 +28,10 @@ public:
 	bool CheckUserName(std::string inUserName);
 	bool CheckPassword(std::string inPassword);
 
+	void Addmsg(std::string usernamekey, std::string msg);
+	void Deletemsg(std::string usernamekey);
+	std::map<std::string, std::vector<std::string>> Getmsg();
+
 	void SaveUserToFile(std::ofstream& ofile);
 	void LoadUserFromFile(std::ifstream& ifile);
 private:
@@ -36,6 +39,8 @@ private:
 	int Permission_level;	// 權限等級  0 = admin  1 = normal user  3 = guests
 	std::string UserName;
 	std::string Password;
+
+	std::map<std::string, std::vector<std::string>> usermessage;
 
 	//std::vector<int> pushpostsID;	// 紀錄推過的post   /*/*spec沒有，不一定要*/*/
 	//std::vector<int> shpostsID;	// 紀錄虛過的post       /*/*spec沒有，不一定要*/*/

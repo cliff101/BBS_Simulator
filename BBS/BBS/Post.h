@@ -12,16 +12,19 @@ public:
 	public:
 		Comment(std::string incmcontent, int increateuserID, std::vector<User*>* inusersptr);//construct comment with content, createuserID
 		Comment(std::ifstream& ifile, std::vector<User*>* inusersptr);//construct comment with load file
+		Comment(const Comment& other);
 		std::string cmcontent;
 
 		int createuserID;//紀錄本Comment由哪位user creat的                在有使用者要操作時才assign
 		std::vector<User*>* usersptr;
+		bool delete_by_admin;
 
 		void SaveCommentToFile(std::ofstream& ofile);
 		void LoadCommentFromFile(std::ifstream& ifile);
 	};
 	Post(std::string inTopic, std::string incontent, int increateuserID, int inthis_postID, std::vector<User*>* inusersptr);//construct post with content, createuserID
 	Post(std::ifstream& ifile, std::vector<User*>* inusersptr);//construct post with load file
+	Post(std::string deletebyadminreason, int originID, std::vector<User*>* inusersptr);
 	~Post();
 
 	long long this_postID;
@@ -35,11 +38,17 @@ public:
 	void NewComment();//func for all none guest to create comment
 	void DeleteComment();//func for admin or that user to delete comment
 	void DeleteAllComment();//func for admin to delete all comments
+	void AdminDeleteComment();
+	void ShThisPost();
+	void PushThisPost();
 
 	int current_user = -1;//紀錄目前是哪個user在操作這個post(新增comment用)  在有使用者要操作時才assign
 	std::vector<User*>* usersptr;
 
+	bool delete_by_admin;
+
 	void SavePostToFile(std::ofstream& ofile);//including num of comments
 	void LoadPostFromFile(std::ifstream& ifile);
 private:
+	void pushshpostoprate(std::vector<int>& selectedvec, std::vector<int>& othervec);
 };
